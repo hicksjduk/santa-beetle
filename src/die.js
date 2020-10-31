@@ -11,7 +11,7 @@ const dieImages = [image1, image2, image3, image4, image5, image6];
 export class Die extends React.Component {
 	render() {
 		return (
-			<span style={{ visibility: this.props.hidden ? 'hidden' : 'visible' }}>
+			<span style={{ visibility: this.props.value === null ? 'hidden' : 'visible' }}>
 				<img style={{ width: 50 }} src={dieImages[this.props.value]} />
 			</span>
 		);
@@ -19,14 +19,16 @@ export class Die extends React.Component {
 }
 
 export class DieTest extends React.Component {
-	state = { value: 0, hidden: false };
+	state = { value: 0 };
 
 	render() {
 		return (
 			<span>
-				<Die value={this.state.value} hidden={this.state.hidden} />
-				<br/><button onClick={() => this.setState({hidden: !this.state.hidden})}>Hide</button>
-				<br/><button onClick={() => this.setState({value: Math.floor(Math.random() * 6)})}>Throw</button>
+				<Die value={this.state.value} />
+				<br /><button onClick={() => {
+					const newValue = this.state.value !== null ? null : Math.floor(Math.random() * 6);
+					this.setState({ value: newValue });
+				}}>Next</button>
 			</span>
 		);
 	}
