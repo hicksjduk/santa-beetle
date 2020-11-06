@@ -29,7 +29,7 @@ class Game {
 export class GameTestBoard extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { playerData: [defaultPlayerData(), defaultPlayerData()] };
+		this.state = {inPlay: false, finished: false, playerData: [defaultPlayerData(), defaultPlayerData()] };
 		this.game = new Game();
 	}
 
@@ -45,8 +45,8 @@ export class GameTestBoard extends React.Component {
 					</td>
 					<td>
 						<button
-							disabled={this.state.playerData.find(p => !p.needed)} 
-							onClick={() => this.next()}>Next</button>
+							disabled={this.state.inPlay} 
+							onClick={() => this.runGame()}>Run game</button>
 					</td>
 					<td>
 						<PlayerBoard
@@ -58,9 +58,23 @@ export class GameTestBoard extends React.Component {
 			</table>
 		);
 	}
+	
+	runGame() {
+		const game = new Game();
+		this.setState({inPlay: true, playerData: [defaultPlayerData(), defaultPlayerData()] });
+		this.nextAfter(game, 1000);
+	}
+	
+	nextAfter(game, timeout) {
+		setTimeout(() => this.next(game), timeout);
+	} 
 
-	next() {
-		this.setState({ playerData: this.game.nextTurn(this.state.playerData) });
+	next(game) {
+		const playerData = game.nextTurn(this.state.playerData);
+		const finished = playerData.find(pd => !pd.needed);
+		this.setState({inPlay: !finished, playerData: playerData });
+		if (!finished)
+			this.nextAfter(game, 1000);
 	}
 }
 
