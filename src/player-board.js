@@ -15,7 +15,7 @@ export class PlayerBoard extends React.Component {
 }
 
 export class PlayerBoardTest extends React.Component {
-	state = { dieValue: null, parts: Array(6).fill(false), needed: 6 };
+	state = defaultPlayerData();
 
 	render() {
 		return (
@@ -40,4 +40,8 @@ export class PlayerBoardTest extends React.Component {
 		} else
 			this.setState({ dieValue: thrown });
 	}
+}
+
+export function defaultPlayerData() {
+	return { dieValue: null, parts: Array(6).fill(false), needed: 6 };
 }
