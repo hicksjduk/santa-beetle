@@ -3,34 +3,51 @@ import { PlayerBoard, defaultPlayerData } from './player-board';
 import { randInt } from "./utils";
 
 class Game {
-	next = randInt(2);
-
-	nextTurn(players) {
-		const other = (this.next + 1) % 2;
-		const answer = players.map((p, i) => this.throw(p, i == other ? null : randInt(6)));
-		this.next = other;
-		return answer;
+	constructor(baseIndex) {
+		this.baseIndex = baseIndex;
 	}
 
-	throw(player, thrown) {
-		const answer = Object.assign({}, player)
-		answer.dieValue = thrown;
-		if (thrown === null)
-			return answer;
-		const parts = answer.parts;
-		if (!parts[thrown] && (thrown == 5 || parts[5])) {
-			parts[thrown] = true;
-			answer.needed--;
-		}
-		return answer;
+	runGame(onChange) {
+		this.next = randInt(2);
+		const players = [defaultPlayerData(), defaultPlayerData()];
+		onChange(this.baseIndex, players);
+		setTimeout(() => this.nextTurn(players, onChange), 1000);
 	}
+
+	nextTurn(players, onChange) {
+		const current = this.next;
+		this.next = (this.next + 1) % 2;
+		const pd = players.map((p, i) => 
+			Object.assign({}, p, {dieValue: i == current ? randInt(6) : null}));
+		onChange(this.baseIndex, pd);
+		setTimeout(() => this.adjustForThrow(current, pd, onChange), 500);
+	}
+	
+	adjustForThrow(index, players, onChange) {
+		const player = players[index];
+		const thrown = player.dieValue;
+		const parts = player.parts;
+		let workPlayers = players;
+		if (thrown == 5 || parts[5])
+			if (!parts[thrown]) {
+				workPlayers = [...players];
+				const p = Object.assign({}, workPlayers[index]);
+				workPlayers[index] = p;
+				p.parts[thrown] = true;
+				const needed = --p.needed;
+				onChange(this.baseIndex + index, [p]);
+				if (!needed)
+					return;
+			}
+		setTimeout(() => this.nextTurn(workPlayers, onChange), 500);
+	}
+
 }
 
 export class GameTestBoard extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {inPlay: false, finished: false, playerData: [defaultPlayerData(), defaultPlayerData()] };
-		this.game = new Game();
+		this.state = {inPlay: false, playerData: [defaultPlayerData(), defaultPlayerData()] };
 	}
 
 	render() {
@@ -60,21 +77,16 @@ export class GameTestBoard extends React.Component {
 	}
 	
 	runGame() {
-		const game = new Game();
-		this.setState({inPlay: true, playerData: [defaultPlayerData(), defaultPlayerData()] });
-		this.nextAfter(game, 1000);
+		const game = new Game(0);
+		this.setState({inPlay: true});
+		game.runGame((index, players) => this.onChange(index, players));
 	}
-	
-	nextAfter(game, timeout) {
-		setTimeout(() => this.next(game), timeout);
-	} 
 
-	next(game) {
-		const playerData = game.nextTurn(this.state.playerData);
-		const finished = playerData.find(pd => !pd.needed);
-		this.setState({inPlay: !finished, playerData: playerData });
-		if (!finished)
-			this.nextAfter(game, 1000);
-	}
+	onChange(index, players) {
+		const newPlayers = this.state.playerData.slice();
+		newPlayers.splice(index, players.length, ...players);
+		const finished = players.find(p => !p.needed);
+		this.setState({inPlay: !finished, playerData: newPlayers});
+	}	
 }
 
