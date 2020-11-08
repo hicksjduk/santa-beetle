@@ -17,12 +17,12 @@ class Game {
 	nextTurn(players, onChange) {
 		const current = this.next;
 		this.next = (this.next + 1) % 2;
-		const pd = players.map((p, i) => 
-			Object.assign({}, p, {dieValue: i == current ? randInt(6) : null}));
+		const pd = players.map((p, i) =>
+			Object.assign({}, p, { dieValue: i == current ? randInt(6) : null }));
 		onChange(this.baseIndex, pd);
 		setTimeout(() => this.adjustForThrow(current, pd, onChange), 500);
 	}
-	
+
 	adjustForThrow(index, players, onChange) {
 		const player = players[index];
 		const thrown = player.dieValue;
@@ -47,38 +47,39 @@ class Game {
 export class GameTestBoard extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {inPlay: false, playerData: [defaultPlayerData(), defaultPlayerData()] };
+		this.state = { inPlay: false, playerData: [defaultPlayerData(), defaultPlayerData()] };
 	}
 
 	render() {
+		const board = i => (
+			<td>
+				<PlayerBoard
+					dieValue={this.state.playerData[i].dieValue}
+					parts={this.state.playerData[i].parts}
+					done={!this.state.playerData[i].needed} />
+			</td>
+		);
+		const button = (
+			<td>
+				<button
+					disabled={this.state.inPlay}
+					onClick={() => this.runGame()}>Run game</button>
+			</td>
+		);
 		return (
 			<table>
 				<tr>
-					<td>
-						<PlayerBoard
-							dieValue={this.state.playerData[0].dieValue}
-							parts={this.state.playerData[0].parts}
-							done={!this.state.playerData[0].needed} />
-					</td>
-					<td>
-						<button
-							disabled={this.state.inPlay} 
-							onClick={() => this.runGame()}>Run game</button>
-					</td>
-					<td>
-						<PlayerBoard
-							dieValue={this.state.playerData[1].dieValue}
-							parts={this.state.playerData[1].parts}
-							done={!this.state.playerData[1].needed} />
-					</td>
+					{board(0)}
+					{button}
+					{board(1)}
 				</tr>
 			</table>
 		);
 	}
-	
+
 	runGame() {
 		const game = new Game(0);
-		this.setState({inPlay: true});
+		this.setState({ inPlay: true });
 		game.runGame((index, players) => this.onChange(index, players));
 	}
 
@@ -86,7 +87,7 @@ export class GameTestBoard extends React.Component {
 		const newPlayers = this.state.playerData.slice();
 		newPlayers.splice(index, players.length, ...players);
 		const finished = players.find(p => !p.needed);
-		this.setState({inPlay: !finished, playerData: newPlayers});
-	}	
+		this.setState({ inPlay: !finished, playerData: newPlayers });
+	}
 }
 
