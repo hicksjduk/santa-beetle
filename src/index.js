@@ -5,10 +5,11 @@ import {Die, DieTest} from './die';
 import {Santa, SantaTest} from './santa';
 import {PlayerBoard, PlayerBoardTest} from './player-board';
 import {GameTestBoard} from './game';
+import {Table} from "./table";
 
 ReactDOM.render(
   <React.StrictMode>
-    <GameTestBoard/>
+    <Table/>
   </React.StrictMode>,
   document.getElementById('root')
 );
