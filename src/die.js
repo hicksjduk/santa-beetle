@@ -12,7 +12,7 @@ export class Die extends React.Component {
 	render() {
 		return (
 			<span style={{ visibility: this.props.value === null ? 'hidden' : 'visible' }}>
-				<img style={{ width: 50 }} src={dieImages[this.props.value]} />
+				<img src={dieImages[this.props.value]} />
 			</span>
 		);
 	}
