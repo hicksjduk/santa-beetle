@@ -2,7 +2,7 @@ import React from 'react';
 import { PlayerBoard, defaultPlayerData } from './player-board';
 import { randInt } from "./utils";
 
-class Game {
+export class Game {
 	constructor(baseIndex) {
 		this.baseIndex = baseIndex;
 	}

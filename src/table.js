@@ -21,6 +21,16 @@ const playerList = [
 	"Hannah C"
 ]
 
+const colours = [
+	"AliceBlue",
+	"Beige",
+	"LavenderBlush",
+	"HoneyDew",
+	"Linen",
+	"PaleTurquoise",
+	"Pink"
+];
+
 function scramble(arr) {
 	for (let i = arr.length - 1; i > 0; i--) {
 		const j = randInt(i + 1);
@@ -34,7 +44,8 @@ export class Table extends React.Component {
 		super(props);
 		const players = playerList.slice();
 		scramble(players);
-		this.state = ({ players: players });
+		const playerData = players.map(i => defaultPlayerData());
+		this.state = ({ gamesInProgress: 0, players: players, playerData: playerData });
 	}
 
 	playerSeat(i, rows = 1) {
@@ -45,14 +56,17 @@ export class Table extends React.Component {
 
 	board(i, rows = 1) {
 		const players = this.state.players;
-		const b = i < players.length ? `Board ${i}` : "";
-		return (<td rowspan={rows}>{b}</td>);
-		/* <td>
-			<PlayerBoard
-				dieValue={this.state.playerData[i].dieValue}
-				parts={this.state.playerData[i].parts}
-				done={!this.state.playerData[i].needed} />
-		</td> */
+		const playerData = this.state.playerData;
+		if (i < players.length)
+			return (
+				<td rowspan={rows} style={{backgroundColor: colours[Math.floor(i / 2)]}}>
+					<PlayerBoard
+						dieValue={playerData[i].dieValue}
+						parts={playerData[i].parts}
+						done={!playerData[i].needed} />
+				</td>
+			);
+		return (<td rowspan={rows} />);
 	}
 
 	middleRow(leftIndex, rightIndex, middle) {
@@ -64,6 +78,22 @@ export class Table extends React.Component {
 				{this.playerSeat(rightIndex)}
 			</tr>
 		);
+	}
+	
+	startGame() {
+		const playerData = this.state.playerData;
+		const games = range(0, playerData.length - playerData.length % 2, 2).map(i => new Game(i));
+		this.setState({gamesInProgress: games.length});
+		games.forEach(g => g.runGame((index, players) => this.onChange(index, players)))
+	}
+
+	onChange(index, players) {
+		const newPlayers = this.state.playerData.slice();
+		newPlayers.splice(index, players.length, ...players);
+		if (players.find(p => !p.needed))
+			this.setState({ gamesInProgress: this.state.gamesInProgress - 1, playerData: newPlayers });
+		else
+			this.setState({ playerData: newPlayers });
 	}
 
 	render() {
@@ -91,7 +121,9 @@ export class Table extends React.Component {
 					{this.playerSeat(onSide, 2)}
 				</tr>
 				<tr>
-					<td rowspan={onEnd} colspan={onSide}>Middle</td>
+					<td rowspan={onEnd} colspan={onSide}>
+						<button disabled={this.state.gamesInProgress} onClick={() => this.startGame()}>Play</button>
+					</td>
 				</tr>
 				{range(1, onEnd - 1).map(i => this.middleRow((onSide + onEnd) * 2 - 1 - i, onSide + i))}
 				<tr>
