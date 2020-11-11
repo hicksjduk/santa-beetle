@@ -1,9 +1,9 @@
 import React from 'react';
 import { PlayerBoard, defaultPlayerData } from './player-board';
 import { Game } from './game';
-import {randInt} from './utils';
+import { randInt, range } from './utils';
 
-const players = [
+const playerList = [
 	"Jeremy",
 	"Rachel",
 	"Peter",
@@ -29,63 +29,87 @@ function scramble(arr) {
 	}
 }
 
-scramble(players);
-
 export class Table extends React.Component {
-	render() {
-		const board = i => (
-			<td>
-				<PlayerBoard
-					dieValue={this.state.playerData[i].dieValue}
-					parts={this.state.playerData[i].parts}
-					done={!this.state.playerData[i].needed} />
-			</td>
+	constructor(props) {
+		super(props);
+		const players = playerList.slice();
+		scramble(players);
+		this.state = ({ players: players });
+	}
+
+	playerSeat(i, rows = 1) {
+		const players = this.state.players;
+		const p = i < players.length ? `${i} ${players[i]}` : "";
+		return (<td rowspan={rows}>{p}</td>);
+	}
+
+	board(i, rows = 1) {
+		const players = this.state.players;
+		const b = i < players.length ? `Board ${i}` : "";
+		return (<td rowspan={rows}>{b}</td>);
+		/* <td>
+			<PlayerBoard
+				dieValue={this.state.playerData[i].dieValue}
+				parts={this.state.playerData[i].parts}
+				done={!this.state.playerData[i].needed} />
+		</td> */
+	}
+
+	middleRow(leftIndex, rightIndex, middle) {
+		return (
+			<tr>
+				{this.playerSeat(leftIndex)}
+				{this.board(leftIndex)}
+				{this.board(rightIndex)}
+				{this.playerSeat(rightIndex)}
+			</tr>
 		);
+	}
+
+	render() {
+		const players = this.state.players;
 		const onEnd = 2;
 		const onSide = Math.ceil((players.length - onEnd * 2) / 2)
-		const playerSeat = p => (
-			<td>{p}</td>
-		);
-		const middleRow = i => {
-			const index1 = (onEnd + onSide) * 2 - i - 1;
-			const index2 = onSide + i;
-			const middleCell = i ? "" : <td colspan={onSide} rowspan={onEnd}/>
-			return (
-				<tr>
-					<td>{index1 < players.length ? playerSeat(players[index1]) : ""}</td>
-					<td/>
-					{middleCell}
-					<td/>
-					<td>{playerSeat(players[index2])}</td>
-				</tr>
-			)
-		};
+
 		return (
-			<table>
+			<table style={{ align: 'center', textAlign: 'center', verticalAlign: 'middle' }}>
 				<tr>
-					<td />
-					<td />
-					{players.slice(0, onSide).map(playerSeat)}
-					<td />
-					<td />
+					<td colspan={3} />
+					{range(0, onSide).map(i => this.playerSeat(i))}
 				</tr>
 				<tr>
-					<td />
-					<td style={{borderBottom: 'none'}} colspan={onSide + 2} />
-					<td />
-				</tr>
-				{players.slice(0, onEnd).map((p, i) => middleRow(i))}
-				<tr>
-					<td />
-					<td style={{borderBottom: 'none'}} colspan={onSide + 2} />
-					<td />
+					<td colspan={2} />
+					<td colspan={onSide + 2} style={{ borderBottom: 'solid', borderWidth: 'thin' }} />
 				</tr>
 				<tr>
-					<td />
-					<td />
-					{players.slice(onSide + onEnd, onSide * 2 + onEnd).reverse().map(playerSeat)}
-					<td />
-					<td />
+					{this.playerSeat((onSide + onEnd) * 2, 2)}
+					<td rowspan={onEnd + 2} style={{ borderRight: 'solid', borderWidth: 'thin' }} />
+					{this.board((onSide + onEnd) * 2, 2)}
+					{range(0, onSide).map(i => this.board(i))}
+					{this.board(onSide, 2)}
+					<td rowspan={onEnd + 2} style={{ borderLeft: 'solid', borderWidth: 'thin' }} />
+					{this.playerSeat(onSide, 2)}
+				</tr>
+				<tr>
+					<td rowspan={onEnd} colspan={onSide}>Middle</td>
+				</tr>
+				{range(1, onEnd - 1).map(i => this.middleRow((onSide + onEnd) * 2 - 1 - i, onSide + i))}
+				<tr>
+					{this.playerSeat(onSide * 2 + onEnd, 2)}
+					{this.board(onSide * 2 + onEnd, 2)}
+					{this.board(onSide + onEnd - 1, 2)}
+					{this.playerSeat(onSide + onEnd - 1, 2)}
+				</tr>
+				<tr>
+					{range(onSide * 2 + onEnd - 1, onSide + onEnd - 1).map(i => this.board(i))}
+				</tr>
+				<tr>
+					<td colspan={2} />
+					<td colspan={onSide + 2} style={{ borderTop: 'solid', borderWidth: 'thin' }} />
+				</tr>
+				<tr>
+					<td colspan={3} />
+					{range(onSide * 2 + onEnd - 1, onSide + onEnd - 1).map(i => this.playerSeat(i))}
 				</tr>
 			</table>
 		);
