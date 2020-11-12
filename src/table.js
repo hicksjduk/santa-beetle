@@ -4,21 +4,21 @@ import { Game } from './game';
 import { randInt, range } from './utils';
 
 const playerList = [
-	"Jeremy",
-	"Rachel",
-	"Peter",
-	"Kay",
-	"Joel",
-	"Mark",
-	"Lyn",
-	"Daniel",
-	"Jack",
-	"Debbie",
-	"Steven",
-	"Chris",
-	"David",
-	"Hannah E",
-	"Hannah C"
+	{ name: "Jeremy" },
+	{ name: "Rachel" },
+	{ name: "Peter" },
+	{ name: "Kay" },
+	{ name: "Joel" },
+	{ name: "Mark" },
+	{ name: "Lyn" },
+	{ name: "Daniel" },
+	{ name: "Jack" },
+	{ name: "Debbie" },
+	{ name: "Steven" },
+	{ name: "Chris" },
+	{ name: "David" },
+	{ name: "Hannah E" },
+	{ name: "Hannah C" }
 ]
 
 const colours = [
@@ -42,16 +42,24 @@ function scramble(arr) {
 export class Table extends React.Component {
 	constructor(props) {
 		super(props);
-		const players = playerList.slice();
+		const players = playerList.map(p => Object.assign({}, p, {wins: 0}));
 		scramble(players);
 		const playerData = players.map(i => defaultPlayerData());
-		this.state = ({ gamesInProgress: 0, players: players, playerData: playerData });
+		this.state = ({ gamesInProgress: 0, movingOn: false, players: players, playerData: playerData });
 	}
 
 	playerSeat(i, rows = 1) {
 		const players = this.state.players;
-		const p = i < players.length ? `${i} ${players[i]}` : "";
-		return (<td rowspan={rows}>{p}</td>);
+		if (i < players.length) {
+			const p = players[i];
+			return (
+				<td rowspan={rows}>
+					{p.name} <br/>
+					{p.wins} {p.wins == 1 ? "win" : "wins"}
+				</td>
+			);
+		}
+		return (<td rowspan={rows}/>);
 	}
 
 	board(i, rows = 1) {
@@ -59,7 +67,7 @@ export class Table extends React.Component {
 		const playerData = this.state.playerData;
 		if (i < players.length)
 			return (
-				<td rowspan={rows} style={{backgroundColor: colours[Math.floor(i / 2)]}}>
+				<td rowspan={rows} style={{ backgroundColor: colours[Math.floor(i / 2)] }}>
 					<PlayerBoard
 						dieValue={playerData[i].dieValue}
 						parts={playerData[i].parts}
@@ -80,21 +88,53 @@ export class Table extends React.Component {
 		);
 	}
 	
-	startGame() {
-		const playerData = this.state.playerData;
-		const games = range(0, playerData.length - playerData.length % 2, 2).map(i => new Game(i));
-		this.setState({gamesInProgress: games.length});
-		games.forEach(g => g.runGame((index, players) => this.onChange(index, players)))
+	moveOn() {
+		const players = this.state.players.slice();
+		const sourceIndices = this.state.winners.slice().sort((a, b) => a - b);
+		if (players.length % 2)
+			sourceIndices.push(players.length - 1);
+		const sourceObjects = sourceIndices.map(i => players[i]);
+		const targetIndices = sourceIndices.slice(1).concat(sourceIndices.slice(0, 1));
+		while (targetIndices.length)
+			players[targetIndices.pop()] = sourceObjects.pop();
+		this.setState({players: players, movingOn: false});
 	}
 
-	onChange(index, players) {
+	startGame() {
+		const playerData = this.state.playerData.map(pd => defaultPlayerData());
+		const games = range(0, playerData.length - playerData.length % 2, 2).map(i => new Game(i));
+		this.setState({ gamesInProgress: games.length, playerData: playerData, winners: [], message: "Ready..." });
+		setTimeout(() => {
+			this.setState({ message: "Ready... Steady..." });
+			setTimeout(() => {
+				this.setState({ message: "Ready... Steady... Ho!" });
+				setTimeout(() => {
+					games.forEach(g => g.runGame((index, players) => this.onChange(index, players, g)));
+				}, 500);
+				setTimeout(() => this.setState({message: ""}), 10000);
+			}, 500);
+		}, 500);
+	}
+
+	onChange(index, players, game) {
 		const newPlayers = this.state.playerData.slice();
 		newPlayers.splice(index, players.length, ...players);
-		if (players.find(p => !p.needed))
-			this.setState({ gamesInProgress: this.state.gamesInProgress - 1, playerData: newPlayers });
+		const winner = game.winner;
+		if (winner != undefined)
+		{
+			const gamesInProgress = this.state.gamesInProgress - 1;
+			const winners = this.state.winners.slice();
+			winners.push(winner);
+			const players = this.state.players.slice();
+			const winningPlayer = players[winner];
+			players[winner] = Object.assign({}, winningPlayer, {wins: winningPlayer.wins + 1});
+			this.setState({ gamesInProgress: gamesInProgress, movingOn: !gamesInProgress, winners: winners, playerData: newPlayers, players: players });
+		}
 		else
 			this.setState({ playerData: newPlayers });
 	}
+	
+	
 
 	render() {
 		const players = this.state.players;
@@ -122,7 +162,14 @@ export class Table extends React.Component {
 				</tr>
 				<tr>
 					<td rowspan={onEnd} colspan={onSide}>
-						<button disabled={this.state.gamesInProgress} onClick={() => this.startGame()}>Play</button>
+						{/*<p>{JSON.stringify(this.state)}</p>*/}
+						<button style={{ visibility: this.state.gamesInProgress || this.state.movingOn ? 'hidden' : 'visible' }}
+							onClick={() => this.startGame()}>Play</button>
+						<span style={{ visibility: this.state.gamesInProgress ? 'visible' : 'hidden' }}>
+							{this.state.message}
+						</span>
+						<button style={{ visibility: !this.state.movingOn ? 'hidden' : 'visible' }}
+							onClick={() => this.moveOn()}>Move on</button>
 					</td>
 				</tr>
 				{range(1, onEnd - 1).map(i => this.middleRow((onSide + onEnd) * 2 - 1 - i, onSide + i))}

@@ -35,6 +35,8 @@ export class Game {
 				workPlayers[index] = p;
 				p.parts[thrown] = true;
 				const needed = --p.needed;
+				if (!needed)
+					this.winner = this.baseIndex + index;
 				onChange(this.baseIndex + index, [p]);
 				if (!needed)
 					return;

@@ -8,7 +8,7 @@ export class PlayerBoard extends React.Component {
 			<span>
 				<Die value={this.props.dieValue} />
 				<Santa parts={this.props.parts} />
-				<p>{this.props.done ? 'Ho ho ho!' : ''}</p>
+				<span style={{visibility: this.props.done ? 'visible' : 'hidden'}}>Ho ho ho!</span>
 			</span>
 		);
 	}
