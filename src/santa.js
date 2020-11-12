@@ -1,11 +1,11 @@
 import React from 'react';
 
-import head from './images/body/head.jpg';
-import leftArm from './images/body/left-arm.jpg';
-import rightArm from './images/body/right-arm.jpg';
-import leftLeg from './images/body/left-leg.jpg';
-import rightLeg from './images/body/right-leg.jpg';
-import body from './images/body/body.jpg';
+import head from './images/body/head.gif';
+import leftArm from './images/body/left-arm.gif';
+import rightArm from './images/body/right-arm.gif';
+import leftLeg from './images/body/left-leg.gif';
+import rightLeg from './images/body/right-leg.gif';
+import body from './images/body/body.gif';
 
 export class Santa extends React.Component {
 	render() {
