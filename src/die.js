@@ -1,18 +1,19 @@
 import React from 'react';
-import image1 from './images/dice/1.jpg';
-import image2 from './images/dice/2.jpg';
-import image3 from './images/dice/3.jpg';
-import image4 from './images/dice/4.jpg';
-import image5 from './images/dice/5.jpg';
-import image6 from './images/dice/6.jpg';
+import image1 from './images/dice/1.gif';
+import image2 from './images/dice/2.gif';
+import image3 from './images/dice/3.gif';
+import image4 from './images/dice/4.gif';
+import image5 from './images/dice/5.gif';
+import image6 from './images/dice/6.gif';
 
 const dieImages = [image1, image2, image3, image4, image5, image6];
 
 export class Die extends React.Component {
 	render() {
+		const value = this.props.value;
 		return (
-			<span style={{ visibility: this.props.value === null ? 'hidden' : 'visible' }}>
-				<img src={dieImages[this.props.value]} />
+			<span style={{ visibility: value === null ? 'hidden' : 'visible' }}>
+				<img src={dieImages[value === null ? 0 : value]} />
 			</span>
 		);
 	}
