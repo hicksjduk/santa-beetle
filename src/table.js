@@ -3,22 +3,39 @@ import { PlayerBoard, defaultPlayerData } from './player-board';
 import { Game } from './game';
 import { randInt, range } from './utils';
 
+import jeremy from './images/avatars/jeremy.jpg';
+import rachel from './images/avatars/rachel.jpeg';
+import peter from './images/avatars/peter.jpeg';
+import kay from './images/avatars/kay.jpeg';
+import joel from './images/avatars/joel.jpeg';
+import debbie from './images/avatars/debbie.jpeg';
+import steven from './images/avatars/steven.jpeg';
+import chris from './images/avatars/chris.jpeg';
+import hannahe from './images/avatars/hannahe.jpeg';
+import david from './images/avatars/david.jpeg';
+import hannahc from './images/avatars/hannahc.jpeg';
+import mark from './images/avatars/mark.jpeg';
+import lyn from './images/avatars/lyn.png';
+import daniel from './images/avatars/daniel.jpeg';
+import jack from './images/avatars/jack.jpeg';
+
+
 const playerList = [
-	{ name: "Jeremy" },
-	{ name: "Rachel" },
-	{ name: "Peter" },
-	{ name: "Kay" },
-	{ name: "Joel" },
-	{ name: "Mark" },
-	{ name: "Lyn" },
-	{ name: "Daniel" },
-	{ name: "Jack" },
-	{ name: "Debbie" },
-	{ name: "Steven" },
-	{ name: "Chris" },
-	{ name: "David" },
-	{ name: "Hannah E" },
-	{ name: "Hannah C" }
+	{ name: "Jeremy", avatar: jeremy },
+	{ name: "Rachel", avatar: rachel },
+	{ name: "Peter", avatar: peter },
+	{ name: "Kay", avatar: kay },
+	{ name: "Joel", avatar: joel },
+	{ name: "Mark", avatar: mark },
+	{ name: "Lyn", avatar: lyn },
+	{ name: "Daniel", avatar: daniel },
+	{ name: "Jack", avatar: jack },
+	{ name: "Debbie", avatar: debbie },
+	{ name: "Steven", avatar: steven },
+	{ name: "Chris", avatar: chris },
+	{ name: "David", avatar: david },
+	{ name: "Hannah E", avatar: hannahe },
+	{ name: "Hannah C", avatar: hannahc }
 ]
 
 const colours = [
@@ -42,7 +59,7 @@ function scramble(arr) {
 export class Table extends React.Component {
 	constructor(props) {
 		super(props);
-		const players = playerList.map(p => Object.assign({}, p, {wins: 0}));
+		const players = playerList.map(p => Object.assign({}, p, { wins: 0 }));
 		scramble(players);
 		const playerData = players.map(i => defaultPlayerData());
 		this.state = ({ gamesInProgress: 0, movingOn: false, players: players, playerData: playerData });
@@ -54,12 +71,15 @@ export class Table extends React.Component {
 			const p = players[i];
 			return (
 				<td rowspan={rows}>
-					{p.name} <br/>
-					{p.wins} {p.wins == 1 ? "win" : "wins"}
+					<img style={{verticalAlign: 'middle'}} src={p.avatar}/>
+					<span style={{verticalAlign: 'middle'}}>
+						<br />{p.name} <br />
+						{p.wins} {p.wins == 1 ? "win" : "wins"}
+					</span>
 				</td>
 			);
 		}
-		return (<td rowspan={rows}/>);
+		return (<td rowspan={rows} />);
 	}
 
 	board(i, rows = 1) {
@@ -87,7 +107,7 @@ export class Table extends React.Component {
 			</tr>
 		);
 	}
-	
+
 	moveOn() {
 		const players = this.state.players.slice();
 		const sourceIndices = this.state.winners.slice().sort((a, b) => a - b);
@@ -97,7 +117,7 @@ export class Table extends React.Component {
 		const targetIndices = sourceIndices.slice(1).concat(sourceIndices.slice(0, 1));
 		while (targetIndices.length)
 			players[targetIndices.pop()] = sourceObjects.pop();
-		this.setState({players: players, movingOn: false});
+		this.setState({ players: players, movingOn: false });
 	}
 
 	startGame() {
@@ -111,7 +131,7 @@ export class Table extends React.Component {
 				setTimeout(() => {
 					games.forEach(g => g.runGame((index, players) => this.onChange(index, players, g)));
 				}, 500);
-				setTimeout(() => this.setState({message: ""}), 10000);
+				setTimeout(() => this.setState({ message: "" }), 10000);
 			}, 500);
 		}, 500);
 	}
@@ -120,21 +140,20 @@ export class Table extends React.Component {
 		const newPlayers = this.state.playerData.slice();
 		newPlayers.splice(index, players.length, ...players);
 		const winner = game.winner;
-		if (winner != undefined)
-		{
+		if (winner != undefined) {
 			const gamesInProgress = this.state.gamesInProgress - 1;
 			const winners = this.state.winners.slice();
 			winners.push(winner);
 			const players = this.state.players.slice();
 			const winningPlayer = players[winner];
-			players[winner] = Object.assign({}, winningPlayer, {wins: winningPlayer.wins + 1});
+			players[winner] = Object.assign({}, winningPlayer, { wins: winningPlayer.wins + 1 });
 			this.setState({ gamesInProgress: gamesInProgress, movingOn: !gamesInProgress, winners: winners, playerData: newPlayers, players: players });
 		}
 		else
 			this.setState({ playerData: newPlayers });
 	}
-	
-	
+
+
 
 	render() {
 		const players = this.state.players;
