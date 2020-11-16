@@ -36,7 +36,9 @@ const playerList = [
 	{ name: "David", avatar: david },
 	{ name: "Hannah E", avatar: hannahe },
 	{ name: "Hannah C", avatar: hannahc }
-]
+];
+
+const targetWins = Math.floor(playerList.length / 2);
 
 const colours = [
 	"AliceBlue",
@@ -59,10 +61,10 @@ function scramble(arr) {
 export class Table extends React.Component {
 	constructor(props) {
 		super(props);
-		const players = playerList.map(p => Object.assign({}, p, { wins: 0 }));
+		const players = playerList.map(p => Object.assign({ wins: 0 }, p));
 		scramble(players);
 		const playerData = players.map(i => defaultPlayerData());
-		this.state = ({ gamesInProgress: 0, movingOn: false, players: players, playerData: playerData });
+		this.state = ({ gamesInProgress: 0, stage: { aboutToPlay: true }, players: players, playerData: playerData });
 	}
 
 	playerSeat(i, rows = 1) {
@@ -71,8 +73,8 @@ export class Table extends React.Component {
 			const p = players[i];
 			return (
 				<td rowspan={rows}>
-					<img style={{verticalAlign: 'middle'}} src={p.avatar}/>
-					<span style={{verticalAlign: 'middle'}}>
+					<img style={{ verticalAlign: 'middle' }} src={p.avatar} />
+					<span style={{ verticalAlign: 'middle' }}>
 						<br />{p.name} <br />
 						{p.wins} {p.wins == 1 ? "win" : "wins"}
 					</span>
@@ -117,13 +119,13 @@ export class Table extends React.Component {
 		const targetIndices = sourceIndices.slice(1).concat(sourceIndices.slice(0, 1));
 		while (targetIndices.length)
 			players[targetIndices.pop()] = sourceObjects.pop();
-		this.setState({ players: players, movingOn: false });
+		this.setState({ players: players, stage: { aboutToPlay: true } });
 	}
 
 	startGame() {
 		const playerData = this.state.playerData.map(pd => defaultPlayerData());
 		const games = range(0, playerData.length - playerData.length % 2, 2).map(i => new Game(i));
-		this.setState({ gamesInProgress: games.length, playerData: playerData, winners: [], message: "Ready..." });
+		this.setState({ gamesInProgress: games.length, playerData: playerData, winners: [], stage: {}, message: "Ready..." });
 		setTimeout(() => {
 			this.setState({ message: "Ready... Steady..." });
 			setTimeout(() => {
@@ -146,14 +148,26 @@ export class Table extends React.Component {
 			winners.push(winner);
 			const players = this.state.players.slice();
 			const winningPlayer = players[winner];
-			players[winner] = Object.assign({}, winningPlayer, { wins: winningPlayer.wins + 1 });
-			this.setState({ gamesInProgress: gamesInProgress, movingOn: !gamesInProgress, winners: winners, playerData: newPlayers, players: players });
+			const winnersWins = winningPlayer.wins + 1;
+			players[winner] = Object.assign({}, winningPlayer, { wins: winnersWins });
+			let gameOver = false;
+			let message = "";
+			if (!gamesInProgress) {
+				const winners = players.filter(p => p.wins >= targetWins).map(p => p.name);
+				gameOver = winners.length;
+				if (winners.length == 1)
+					message = `Game over! The winner is ${winners[0]}.`;
+				else if (winners.length > 1)
+					message = `Game over! The winners are ${winners.slice(0, -1).join(', ')} and ${winners.slice(-1)}.`;
+			}
+			this.setState({
+				gamesInProgress: gamesInProgress, winners: winners, playerData: newPlayers, players: players,
+				stage: gameOver ? { gameOver: true } : gamesInProgress ? {} : { movingOn: true }, message: message
+			});
 		}
 		else
 			this.setState({ playerData: newPlayers });
 	}
-
-
 
 	render() {
 		const players = this.state.players;
@@ -182,12 +196,10 @@ export class Table extends React.Component {
 				<tr>
 					<td rowspan={onEnd} colspan={onSide}>
 						{/*<p>{JSON.stringify(this.state)}</p>*/}
-						<button style={{ visibility: this.state.gamesInProgress || this.state.movingOn ? 'hidden' : 'visible' }}
+						<button style={{ visibility: this.state.stage.aboutToPlay ? 'visible' : 'hidden' }}
 							onClick={() => this.startGame()}>Play</button>
-						<span style={{ visibility: this.state.gamesInProgress ? 'visible' : 'hidden' }}>
-							{this.state.message}
-						</span>
-						<button style={{ visibility: !this.state.movingOn ? 'hidden' : 'visible' }}
+						<span>{this.state.message}</span>
+						<button style={{ visibility: this.state.stage.movingOn ? 'visible' : 'hidden' }}
 							onClick={() => this.moveOn()}>Move on</button>
 					</td>
 				</tr>
