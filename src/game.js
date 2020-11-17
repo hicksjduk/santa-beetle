@@ -1,22 +1,23 @@
 import React from 'react';
 import { PlayerBoard, defaultPlayerData } from './player-board';
-import { randInt } from "./utils";
+import { randInt, range } from "./utils";
 
 export class Game {
-	constructor(baseIndex) {
+	constructor(baseIndex, playerCount=2) {
 		this.baseIndex = baseIndex;
+		this.playerCount = playerCount;
 	}
 
 	runGame(onChange) {
-		this.next = randInt(2);
-		const players = [defaultPlayerData(), defaultPlayerData()];
+		this.next = randInt(this.playerCount);
+		const players = Array.from({length: this.playerCount}, i => defaultPlayerData());
 		onChange(this.baseIndex, players);
 		setTimeout(() => this.nextTurn(players, onChange), 1000);
 	}
 
 	nextTurn(players, onChange) {
 		const current = this.next;
-		this.next = (this.next + 1) % 2;
+		this.next = (this.next + 1) % this.playerCount;
 		const pd = players.map((p, i) =>
 			Object.assign({}, p, { dieValue: i == current ? randInt(6) : null }));
 		onChange(this.baseIndex, pd);
@@ -49,7 +50,9 @@ export class Game {
 export class GameTestBoard extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { inPlay: false, playerData: [defaultPlayerData(), defaultPlayerData()] };
+		const playerCount = props.playerCount || 2;
+		const playerData = Array.from({length: playerCount}, i => defaultPlayerData());
+		this.state = { inPlay: false, playerData: playerData };
 	}
 
 	render() {
@@ -71,16 +74,15 @@ export class GameTestBoard extends React.Component {
 		return (
 			<table>
 				<tr>
-					{board(0)}
+					{range(0, this.props.playerCount).map(i => board(i))}
 					{button}
-					{board(1)}
 				</tr>
 			</table>
 		);
 	}
 
 	runGame() {
-		const game = new Game(0);
+		const game = new Game(0, this.props.playerCount);
 		this.setState({ inPlay: true });
 		game.runGame((index, players) => this.onChange(index, players));
 	}
