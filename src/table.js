@@ -64,7 +64,8 @@ export class Table extends React.Component {
 		const players = playerList.map(p => Object.assign({ wins: 0 }, p));
 		scramble(players);
 		const playerData = players.map(i => defaultPlayerData());
-		this.state = ({ gamesInProgress: 0, stage: { aboutToPlay: true }, players: players, playerData: playerData });
+		this.state = ({ gamesInProgress: 0, stage: { aboutToPlay: true }, players: players, playerData: playerData, 
+			playersPerGame: 2});
 	}
 
 	playerSeat(i, rows = 1) {
@@ -87,9 +88,15 @@ export class Table extends React.Component {
 	board(i, rows = 1) {
 		const players = this.state.players;
 		const playerData = this.state.playerData;
+		const playersPerGame = this.state.playersPerGame;
+		const maxGames = this.state.maxGames
+		const maxPlayers = maxGames ? maxGames * playersPerGame : players.length; 
 		if (i < players.length)
 			return (
-				<td rowspan={rows} style={{ backgroundColor: colours[Math.floor(i / 2)] }}>
+				<td rowspan={rows} style={{ 
+						backgroundColor: colours[Math.floor(i / playersPerGame)],
+						visibility: i < maxPlayers ? 'visible' : 'hidden' 
+					}}>
 					<PlayerBoard
 						dieValue={playerData[i].dieValue}
 						parts={playerData[i].parts}
