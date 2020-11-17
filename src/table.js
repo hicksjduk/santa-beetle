@@ -217,6 +217,8 @@ export class Table extends React.Component {
 						<span>{this.state.message}</span>
 						<button style={{ visibility: this.state.stage.movingOn ? 'visible' : 'hidden' }}
 							onClick={() => this.moveOn()}>Move on</button>
+						<button style={{ visibility: this.state.stage.playoff ? 'visible' : 'hidden' }}
+							onClick={() => this.playoff()}>Play off</button>
 					</td>
 				</tr>
 				{range(1, onEnd - 1).map(i => this.middleRow((onSide + onEnd) * 2 - 1 - i, onSide + i))}
