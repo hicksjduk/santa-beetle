@@ -91,18 +91,20 @@ export class Table extends React.Component {
 		const playersPerGame = this.state.playersPerGame;
 		const maxGames = this.state.maxGames
 		const maxPlayers = maxGames ? maxGames * playersPerGame : players.length; 
-		if (i < players.length)
+		if (i < players.length) {
+			const pd = playerData[i] || defaultPlayerData();
 			return (
 				<td rowspan={rows} style={{ 
 						backgroundColor: colours[Math.floor(i / playersPerGame)],
 						visibility: i < maxPlayers ? 'visible' : 'hidden' 
 					}}>
 					<PlayerBoard
-						dieValue={playerData[i].dieValue}
-						parts={playerData[i].parts}
-						done={!playerData[i].needed} />
+						dieValue={pd.dieValue}
+						parts={pd.parts}
+						done={!pd.needed} />
 				</td>
 			);
+		}
 		return (<td rowspan={rows} />);
 	}
 
@@ -194,6 +196,16 @@ export class Table extends React.Component {
 		}
 		else
 			this.setState({ playerData: newPlayers });
+	}
+	
+	playoff() {
+		const players = this.state.players.slice();
+		const playerIndices = this.state.stage.playerIndices.slice().sort((a, b) => b - a);
+		const playoffPlayers = playerIndices.flatMap(i => players.splice(i, 1));
+		scramble(playoffPlayers);
+		players.splice(0, 0, ...playoffPlayers);
+		this.setState({players: players, stage: {aboutToPlay: true}, maxGames: 1, playersPerGame: playoffPlayers.length,
+			message: ""});
 	}
 
 	render() {
