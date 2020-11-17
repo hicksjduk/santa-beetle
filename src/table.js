@@ -120,8 +120,10 @@ export class Table extends React.Component {
 	moveOn() {
 		const players = this.state.players.slice();
 		const sourceIndices = this.state.winners.slice().sort((a, b) => a - b);
-		if (players.length % 2)
-			sourceIndices.push(players.length - 1);
+		const playersPerGame = this.state.playersPerGame;
+		const inactivePlayers = players.length % playersPerGame;
+		if (inactivePlayers)
+			sourceIndices.push(...range(players.length - inactivePlayers, players.length));
 		const sourceObjects = sourceIndices.map(i => players[i]);
 		const targetIndices = sourceIndices.slice(1).concat(sourceIndices.slice(0, 1));
 		while (targetIndices.length)
@@ -130,8 +132,10 @@ export class Table extends React.Component {
 	}
 
 	startGame() {
+		const playersPerGame = this.state.playersPerGame;
+		const maxGames = this.state.maxGames || Math.floor(this.state.players.length / playersPerGame);
 		const playerData = this.state.playerData.map(pd => defaultPlayerData());
-		const games = range(0, playerData.length - playerData.length % 2, 2).map(i => new Game(i));
+		const games = range(0, playersPerGame * maxGames, playersPerGame).map(i => new Game(i, playersPerGame));
 		this.setState({ gamesInProgress: games.length, playerData: playerData, winners: [], stage: {}, message: "Ready..." });
 		setTimeout(() => {
 			this.setState({ message: "Ready... Steady..." });
