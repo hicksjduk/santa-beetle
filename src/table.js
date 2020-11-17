@@ -25,7 +25,7 @@ const playerList = [
 	{ name: "Rachel", avatar: rachel },
 	{ name: "Peter", avatar: peter },
 	{ name: "Kay", avatar: kay },
-	{ name: "Joel", avatar: joel },
+	{ name: "Joel", avatar: joel},
 	{ name: "Mark", avatar: mark },
 	{ name: "Lyn", avatar: lyn },
 	{ name: "Daniel", avatar: daniel },
@@ -152,17 +152,33 @@ export class Table extends React.Component {
 			players[winner] = Object.assign({}, winningPlayer, { wins: winnersWins });
 			let gameOver = false;
 			let message = "";
+			let stage = {};
 			if (!gamesInProgress) {
-				const winners = players.filter(p => p.wins >= targetWins).map(p => p.name);
-				gameOver = winners.length;
-				if (winners.length == 1)
-					message = `Game over! The winner is ${winners[0]}.`;
-				else if (winners.length > 1)
-					message = `Game over! The winners are ${winners.slice(0, -1).join(', ')} and ${winners.slice(-1)}.`;
+				const winnerIndices = players.map((p, i) => i).filter(i => players[i].wins >= targetWins)
+					.reduce((acc, i) => {
+						const difference = players[i].wins - (acc.length ? players[acc[0]].wins : 0);
+						if (difference > 0)
+							return [i];
+						if (difference == 0)
+							acc.push(i);
+						return acc;
+					}, []);
+				gameOver = winnerIndices.length;
+				if (winnerIndices.length == 1) {
+					message = `Game over! The winner is ${players[winnerIndices[0]].name}.`;
+					stage = {gameOver: true};
+				}
+				else if (winnerIndices.length > 1) {
+					const winners = winnerIndices.map(i => players[i].name);
+					message = `${winners.slice(0, -1).join(', ')} and ${winners.slice(-1)} need to play off to determine the winner.`;
+					stage = {playoff: true, playerIndices: winnerIndices};
+				}
+				else
+				   stage = {movingOn: true};
 			}
 			this.setState({
 				gamesInProgress: gamesInProgress, winners: winners, playerData: newPlayers, players: players,
-				stage: gameOver ? { gameOver: true } : gamesInProgress ? {} : { movingOn: true }, message: message
+				stage: stage, message: message
 			});
 		}
 		else
