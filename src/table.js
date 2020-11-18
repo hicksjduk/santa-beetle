@@ -204,8 +204,9 @@ export class Table extends React.Component {
 		const playoffPlayers = playerIndices.flatMap(i => players.splice(i, 1));
 		scramble(playoffPlayers);
 		players.splice(0, 0, ...playoffPlayers);
-		this.setState({players: players, stage: {aboutToPlay: true}, maxGames: 1, playersPerGame: playoffPlayers.length,
+		this.setState({players: players, stage: {}, maxGames: 1, playersPerGame: playoffPlayers.length,
 			message: ""});
+		setTimeout(() => this.startGame(), 200);
 	}
 
 	render() {
