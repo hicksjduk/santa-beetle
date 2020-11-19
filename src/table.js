@@ -73,7 +73,7 @@ export class Table extends React.Component {
 		if (i < players.length) {
 			const p = players[i];
 			return (
-				<td rowspan={rows} style={{width: 75, height: 120}}>
+				<td rowspan={rows} style={{width: 75, height: 130}}>
 					<img style={{ verticalAlign: 'middle' }} src={p.avatar} />
 					<span style={{ verticalAlign: 'middle' }}>
 						<br />{p.name} <br />
