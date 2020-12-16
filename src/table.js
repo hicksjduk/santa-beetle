@@ -238,7 +238,7 @@ export class Table extends React.Component {
 						{/*<p>{JSON.stringify(this.state)}</p>*/}
 						<button style={{ visibility: this.state.stage.aboutToPlay ? 'visible' : 'hidden' }}
 							onClick={() => this.startGame()}>Play</button>
-						<span>{this.state.message}</span>
+						<span style={{fontSize: 'larger', fontWeight: 'bold'}}>{this.state.message}</span>
 						<button style={{ visibility: this.state.stage.movingOn ? 'visible' : 'hidden' }}
 							onClick={() => this.moveOn()}>Move on</button>
 						<button style={{ visibility: this.state.stage.playoff ? 'visible' : 'hidden' }}
